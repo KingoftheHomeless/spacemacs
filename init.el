@@ -31,6 +31,7 @@ values."
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
+     yaml
      haskell
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
@@ -84,7 +85,7 @@ values."
    ;; This variable has no effect if Emacs is launched with the parameter
    ;; `--insecure' which forces the value of this variable to nil.
    ;; (default t)
-   dotspacemacs-elpa-https t
+   dotspacemacs-elpa-https nil
    ;; Maximum allowed time in seconds to contact an ELPA repository.
    dotspacemacs-elpa-timeout 5
    ;; If non nil then spacemacs will check for updates at startup
@@ -260,7 +261,7 @@ values."
    ;;                       text-mode
    ;;   :size-limit-kb 1000)
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers t
    ;; Code folding method. Possible values are `evil' and `origami'.
    ;; (default 'evil)
    dotspacemacs-folding-method 'evil
@@ -424,6 +425,7 @@ you should place your code here."
 
 (let ((default-directory "~/.spacemacs.d/elpa/"))
   (normal-top-level-add-subdirs-to-load-path))
+(package-initialize)
 
 ;; ===========
 ;; Navigation
@@ -446,13 +448,25 @@ you should place your code here."
 ;; C-SPC after C-u C-SPC cycles mark stack
 (setq-default set-mark-command-repeat-pop t)
 
+(require 'helm-bookmark)
+
 ;; Move entire paragraph with M-n/M-p
 (global-set-key "\M-n" 'forward-paragraph)
 (global-set-key "\M-p" 'backward-paragraph)
 
 ;; Back to indentation with M-a
 (global-set-key "\M-a" 'back-to-indentation)
+(define-key evil-insert-state-map "\M-\t" 'indent-relative)
+(define-key evil-insert-state-map "\t" 'tab-to-tab-stop)
+(define-key evil-normal-state-map "§" 'tab-to-tab-stop)
+(define-key evil-normal-state-map (kbd "M-§") 'indent-relative)
 
+;(define-key evil-normal-state-map (kbd "M-<tab>") 'indent-relative)
+(define-key evil-motion-state-map "j" 'evil-previous-line)
+(define-key evil-motion-state-map "k" 'evil-next-line)
+(define-key evil-motion-state-map "é" 'evil-end-of-line)
+;(define-key evil-normal-state-map "j" 'evil-previous-line)
+;(define-key evil-normal-state-map "k" 'evil-next-line)
 ;; Avy mode
 ;; Jump anywhere on screen in four keystrokes or less.
 (require 'avy)
@@ -481,6 +495,15 @@ you should place your code here."
 
 ;; Use multiple spaces instead of tab characters
 (setq-default indent-tabs-mode nil)
+(setq tab-width 4)
+(defvaralias 'haskell-tab-width 'tab-width)
+(defvaralias 'cperl-indent-level 'tab-width)
+
+(require 'hs-lint)
+(require 'flymake-hlint)
+(defun my-haskell-mode-hook ()
+   (local-set-key "\C-cl" 'hs-lint))
+(add-hook 'haskell-mode-hook 'my-haskell-mode-hook)
 
 ;; hippie-expand instead of dabbrev-expand
 ;; dabbrev-expand will try to expand the word under the cursor by
@@ -645,9 +668,28 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-faces-vector
+   [default default default italic underline success warning error])
+ '(ansi-color-names-vector
+   ["black" "#d55e00" "#009e73" "#f8ec59" "#0072b2" "#cc79a7" "#56b4e9" "white"])
+ '(c-basic-offset 4)
+ '(custom-safe-themes
+   (quote
+    ("fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default)))
+ '(evil-want-Y-yank-to-eol nil)
+ '(flycheck-clang-args
+   (quote
+    ("-Wfloat-equal" "-Wunreachable-code" "-Wredundant-decls" "-Wpadded" "-Wstrict-prototypes" "-Wcast-align" "-Wbad-function-cast" "-Wcast-qual" "-Wpointer-arith" "-Wlogicalop" "-Wshadow" "-Wjump-misses-init" "-Wextra" "-Wall")))
+ '(flycheck-clang-include-path (quote ("/usr/local/Cellar/cunit/2.1-3/include")))
+ '(haskell-indent-spaces 4)
+ '(help-at-pt-display-when-idle (quote (flymake-overlay)) nil (help-at-pt))
+ '(help-at-pt-timer-delay 0.2)
+ '(line-number-mode nil)
  '(package-selected-packages
    (quote
-    (intero haskell-snippets company-ghci company-ghc ghc flycheck hlint-refactor hindent helm-hoogle yasnippet company haskell-mode cmm-mode ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash))))
+    (yaml-mode intero haskell-snippets company-ghci company-ghc ghc flycheck hlint-refactor hindent helm-hoogle yasnippet company haskell-mode cmm-mode ws-butler winum which-key volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spaceline powerline restart-emacs request rainbow-delimiters popwin persp-mode pcre2el paradox spinner org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint info+ indent-guide hydra hungry-delete hl-todo highlight-parentheses highlight-numbers parent-mode highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make projectile pkg-info epl helm-flx helm-descbinds helm-ag google-translate golden-ratio flx-ido flx fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state smartparens evil-indent-plus evil-iedit-state iedit evil-exchange evil-escape evil-ediff evil-args evil-anzu anzu evil goto-chg undo-tree eval-sexp-fu highlight elisp-slime-nav dumb-jump diminish define-word column-enforce-mode clean-aindent-mode bind-map bind-key auto-highlight-symbol auto-compile packed aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line helm avy helm-core popup async org-plus-contrib evil-unimpaired f s dash)))
+ '(tab-stop-list (quote (4 8)))
+ '(tab-width 4))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
